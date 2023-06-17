@@ -8,7 +8,7 @@ This Python script demonstrates how to use Azure Cognitive Services Speech and O
 - Azure Cognitive Services Speech subscription key and region
 - Azure OpenAI API key and API endpoint base URL
 
-> Note: Follow my post [here](https://graef.io/posts/building-your-own-gpt-powered-ai-voice-assistant-with-azure-cognitive-services-and-openai/) for a detailed guide on how to set up Azure Cognitive Services and OpenAI.
+> Note: Follow my post [here](https://www.graef.io/building-your-own-gpt-powered-ai-voice-assistant-with-azure-cognitive-services-and-openai/) for a detailed guide on how to set up Azure Cognitive Services and OpenAI.
 
 ## Installation
 
