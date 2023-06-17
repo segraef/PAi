@@ -2,6 +2,13 @@ import azure.cognitiveservices.speech as speechsdk
 import os
 import openai
 
+# Set up the wake word and stop word
+WAKE_WORD = "Hey Raspberry"
+STOP_WORD = "Stop"
+
+# Initialize command execution flag
+execute_commands = False
+
 # Set up Azure Cognitive Services Speech
 speech_key = os.environ.get('cognitive_services_speech_key')
 service_region, endpoint = "australiaeast", "https://australiaeast.api.cognitive.microsoft.com/sts/v1.0/issuetoken"
@@ -35,10 +42,44 @@ def openai_generate_response(prompt):
     except openai.error.OpenAIError as e:
         print(f"OpenAI error: {e}")
 
+def process_commands(text):
+    if "lights" in text and "turn on" in text:
+        execute_light_on_command()
+
+    # Example command: "Play some music"
+    elif "play" in text and "music" in text:
+        execute_play_music_command()
+
+def keyword_listener(event):
+    global execute_commands
+
+    if event.result.reason == speechsdk.ResultReason.RecognizedSpeech:
+        recognized_text = event.result.text
+
+        # Check if the wake word is detected
+        if WAKE_WORD in recognized_text:
+            execute_commands = True
+            print("Listening...")
+
+        # Check if the stop word is detected
+        elif STOP_WORD in recognized_text:
+            execute_commands = False
+            print("Stopped listening.")
+
+        # Process commands only if the execute_commands flag is set
+        if execute_commands:
+            process_commands(recognized_text)
+
 print("Say something...")
 
 # Recognize speech from an audio input stream
 result_stt = speech_recognizer.recognize_once()
+
+# Start continous speech recognition from an audio input stream
+# result_stt = speech_recognizer.start_continuous_recognition()
+
+# Set up the event handler for recognized speech
+# speech_recognizer.recognized.connect(keyword_listener)
 
 # Check speech recognition result
 if result_stt.reason == speechsdk.ResultReason.RecognizedSpeech:
@@ -69,3 +110,7 @@ elif result_tts.reason == speechsdk.ResultReason.Canceled:
         if cancellation_details.error_details:
             print("Error details: {}".format(cancellation_details.error_details))
     print("Did you update the subscription info?")
+    exit(1)
+
+# while True:
+    # pass
