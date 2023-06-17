@@ -1,12 +1,14 @@
 import azure.cognitiveservices.speech as speechsdk
+import sys
 import os
 import openai
-# import openai.error
+import openai.error
 import requests.exceptions
 
 # Set up the wake word and stop word
-WAKE_WORD = "Hey Raspberry"
-STOP_WORD = "Stop"
+WAKE_WORD = "Anna"
+STOP_WORD = "Banana"
+EXIT_WORD = "Exit"
 
 # Initialize command execution flag
 execute_commands = False
@@ -42,7 +44,26 @@ openai.api_base = os.environ.get('openai_api_base')
 openai.api_type = 'azure'
 openai.api_version = '2023-05-15'
 
-# Define a function to generate a response using Azure OpenAI
+# Function to generate a response using Azure OpenAI
+
+
+def openai_generate_response(prompt):
+    try:
+        response = openai.Completion.create(
+            engine="davinci",
+            prompt=prompt,
+            max_tokens=1000,
+            temperature=0.7,
+        )
+        return response.choices[0].text.strip()
+    except openai.error.InvalidRequestError as e:
+        print(f"Invalid request error: {e}")
+    except openai.error.AuthenticationError as e:
+        print(f"Authentication error: {e}")
+    except openai.error.APIConnectionError as e:
+        print(f"API connection error: {e}")
+    except openai.error.OpenAIError as e:
+        print(f"OpenAI error: {e}")
 
 
 def process_commands(text):
@@ -64,10 +85,12 @@ def keyword_listener(event):
         # Check if the wake word is detected
         if WAKE_WORD in recognized_text:
             execute_commands = True
-            print("Listening...")
+            print("Yes, I'm listening ...")
 
+            # speech_recognizer.start_continuous_recognition()
             # Generate a response using OpenAI API
             response = openai_generate_response(recognized_text)
+            print("blubb")
 
             # Print the response
             print(f"OpenAI response: {response}")
@@ -93,11 +116,25 @@ def keyword_listener(event):
         # Check if the stop word is detected
         elif STOP_WORD in recognized_text:
             execute_commands = False
-            print("Stopped listening.")
+            print("Stopped speaking.")
+
+            # Interrupt the speech synthesis if it is still in progress
+            speech_synthesizer.stop_speaking()
+
+        # Check if the exit word is detected
+        elif EXIT_WORD in recognized_text:
+            execute_commands = False
+            print("Goodbye.")
+            sys.exit(0)
+
+            # Stop the speech recognizer
+            # speech_recognizer.stop_continuous_recognition()
 
         # Process commands only if the execute_commands flag is set
         if execute_commands:
             process_commands(recognized_text)
+
+        print("Blubb2")
 
     # Error handling
     elif event.result.reason == speechsdk.ResultReason.NoMatch:
@@ -112,13 +149,17 @@ def keyword_listener(event):
                 cancellation_details.error_details))
         print("Did you update the subscription info?")
         exit(1)
+    print("Blubb3")
 
 
-# Connect the keyword listener to the recognized event
+# Connect the keyword listener to the speech recognizer
 speech_recognizer.recognized.connect(keyword_listener)
+print("Connected keyword listener to speech recognizer")
 
-# Start continuous speech recognition
+# Start the speech recognition
+print("Starting speech recognition")
 speech_recognizer.start_continuous_recognition()
+print("Speech recognition started")
 # speech_recognizer.recognize_once()
 
 while True:
