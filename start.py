@@ -52,8 +52,12 @@ def openai_generate_response(prompt):
         response = openai.Completion.create(
             engine="davinci",
             prompt=prompt,
-            max_tokens=1000,
+            max_tokens=800,
             temperature=0.7,
+            top_p=0.95,
+            frequency_penalty=0,
+            presence_penalty=0,
+            stop=None
         )
         return response.choices[0].text.strip()
     except openai.error.InvalidRequestError as e:
@@ -125,7 +129,7 @@ def keyword_listener(event):
         elif EXIT_WORD in recognized_text:
             execute_commands = False
             print("Goodbye.")
-            sys.exit(0)
+            exit(0)
 
             # Stop the speech recognizer
             # speech_recognizer.stop_continuous_recognition()
