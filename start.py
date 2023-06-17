@@ -1,6 +1,7 @@
 import azure.cognitiveservices.speech as speechsdk
 import os
 import openai
+# import openai.error
 import requests.exceptions
 
 # Set up the wake word and stop word
@@ -44,25 +45,6 @@ openai.api_version = '2023-05-15'
 # Define a function to generate a response using Azure OpenAI
 
 
-def openai_generate_response(prompt):
-    try:
-        response = openai.Completion.create(
-            engine="davinci",
-            prompt=prompt,
-            max_tokens=1000,
-            temperature=0.5,
-        )
-        return response.choices[0].text.strip()
-    except openai.error.InvalidRequestError as e:
-        print(f"Invalid request error: {e}")
-    except openai.error.AuthenticationError as e:
-        print(f"Authentication error: {e}")
-    except openai.error.APIConnectionError as e:
-        print(f"API connection error: {e}")
-    except openai.error.OpenAIError as e:
-        print(f"OpenAI error: {e}")
-
-
 def process_commands(text):
     if "lights" in text and "turn on" in text:
         execute_light_on_command()
@@ -77,11 +59,36 @@ def keyword_listener(event):
 
     if event.result.reason == speechsdk.ResultReason.RecognizedSpeech:
         recognized_text = event.result.text
+        print(f"Recognized speech: {recognized_text}")
 
         # Check if the wake word is detected
         if WAKE_WORD in recognized_text:
             execute_commands = True
             print("Listening...")
+
+            # Generate a response using OpenAI API
+            response = openai_generate_response(recognized_text)
+
+            # Print the response
+            print(f"OpenAI response: {response}")
+
+            # Synthesize the response into speech
+            speech_synthesizer.speak_text_async(response).get()
+
+            # Check speech synthesis result
+            if event.result.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
+                print("Speech synthesized to speaker for text [{}]".format(
+                    response))
+            elif event.result.reason == speechsdk.ResultReason.Canceled:
+                cancellation_details = event.result.cancellation_details
+                print("Speech synthesis canceled: {}".format(
+                    cancellation_details.reason))
+                if cancellation_details.reason == speechsdk.CancellationReason.Error:
+                    if cancellation_details.error_details:
+                        print("Error details: {}".format(
+                            cancellation_details.error_details))
+                print("Did you update the subscription info?")
+                exit(1)
 
         # Check if the stop word is detected
         elif STOP_WORD in recognized_text:
@@ -92,52 +99,27 @@ def keyword_listener(event):
         if execute_commands:
             process_commands(recognized_text)
 
-# Set up the event handler for recognized speech
-# speech_recognizer.recognized.connect(keyword_listener)
-
-
-while True:
-    print("Say something...")
-
-    # Recognize speech from an audio input stream
-    result_stt = speech_recognizer.recognize_once()
-
-    # Start continous speech recognition from an audio input stream
-    # result_stt = speech_recognizer.start_continuous_recognition()
-
-    # Check speech recognition result
-    if result_stt.reason == speechsdk.ResultReason.RecognizedSpeech:
-        recognized_text = result_stt.text
-        print("Recognized: {}".format(recognized_text))
-    elif result_stt.reason == speechsdk.ResultReason.NoMatch:
+    # Error handling
+    elif event.result.reason == speechsdk.ResultReason.NoMatch:
         print("No speech could be recognized: {}".format(
-            result_stt.no_match_details))
-    elif result_stt.reason == speechsdk.ResultReason.Canceled:
-        cancellation_details = result_stt.cancellation_details
+            event.result.no_match_details))
+    elif event.result.reason == speechsdk.ResultReason.Canceled:
+        cancellation_details = event.result.cancellation_details
         print("Speech Recognition canceled: {}".format(
             cancellation_details.reason))
         if cancellation_details.reason == speechsdk.CancellationReason.Error:
             print("Error details: {}".format(
                 cancellation_details.error_details))
-
-    # Generate response using Azure OpenAI
-    response_text = openai_generate_response(recognized_text)
-    print("Generated response:", response_text)
-
-    # Synthesize the response into speech
-    result_tts = speech_synthesizer.speak_text_async(response_text).get()
-
-    # Check speech synthesis result
-    if result_tts.reason == speechsdk.ResultReason.SynthesizingAudioCompleted:
-        print("Speech synthesized to speaker for text [{}]".format(
-            response_text))
-    elif result_tts.reason == speechsdk.ResultReason.Canceled:
-        cancellation_details = result_tts.cancellation_details
-        print("Speech synthesis canceled: {}".format(
-            cancellation_details.reason))
-        if cancellation_details.reason == speechsdk.CancellationReason.Error:
-            if cancellation_details.error_details:
-                print("Error details: {}".format(
-                    cancellation_details.error_details))
         print("Did you update the subscription info?")
         exit(1)
+
+
+# Connect the keyword listener to the recognized event
+speech_recognizer.recognized.connect(keyword_listener)
+
+# Start continuous speech recognition
+speech_recognizer.start_continuous_recognition()
+# speech_recognizer.recognize_once()
+
+while True:
+    pass
