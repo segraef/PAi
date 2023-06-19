@@ -6,8 +6,8 @@ import openai.error
 import requests.exceptions
 
 # Set up the wake word and stop word
-WAKE_WORD = "Anna"
-STOP_WORD = "Banana"
+WAKE_WORD = "Hey Azure."
+STOP_WORD = "Stop."
 EXIT_WORD = "Exit"
 
 # Initialize command execution flag
@@ -71,7 +71,7 @@ def process_commands(text):
 
 def keyword_listener(event):
     global execute_commands
-
+    # speech_recognizer.recognize_once()
     if event.result.reason == speechsdk.ResultReason.RecognizedSpeech:
         recognized_text = event.result.text
         print(f"Recognized speech: {recognized_text}")
@@ -84,7 +84,6 @@ def keyword_listener(event):
             # speech_recognizer.start_continuous_recognition()
             # Generate a response using OpenAI API
             response = openai_generate_response(recognized_text)
-            print("blubb")
 
             # Print the response
             print(f"OpenAI response: {response}")
@@ -128,8 +127,6 @@ def keyword_listener(event):
         if execute_commands:
             process_commands(recognized_text)
 
-        print("Blubb2")
-
     # Error handling
     elif event.result.reason == speechsdk.ResultReason.NoMatch:
         print("No speech could be recognized: {}".format(
@@ -143,10 +140,9 @@ def keyword_listener(event):
                 cancellation_details.error_details))
         print("Did you update the subscription info?")
         exit(1)
-    print("Blubb3")
 
 
-# Connect the keyword listener to the speech recognizer
+    # Connect the keyword listener to the speech recognizer
 speech_recognizer.recognized.connect(keyword_listener)
 print("Connected keyword listener to speech recognizer")
 
@@ -154,7 +150,6 @@ print("Connected keyword listener to speech recognizer")
 print("Starting speech recognition")
 speech_recognizer.start_continuous_recognition()
 print("Speech recognition started")
-# speech_recognizer.recognize_once()
 
 while True:
     pass
