@@ -18,16 +18,15 @@ deployment_id = 'davinci'
 speech_key = os.environ.get('cognitive_services_speech_key')
 service_region, endpoint = "australiaeast", "https://australiaeast.api.cognitive.microsoft.com/sts/v1.0/issuetoken"
 
-try:
-    speech_config = speechsdk.SpeechConfig(
-        subscription=speech_key, region=service_region)  # https://learn.microsoft.com/en-us/azure/cognitive-services/speech-service/language-support?tabs=tts
-    speech_config.speech_synthesis_voice_name = "en-US-AshleyNeural"
-    speech_synthesizer = speechsdk.SpeechSynthesizer(
-        speech_config=speech_config)
-    speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config)
-except ValueError as ex:
-    print(f"Error: {ex}")
-    exit(1)
+# https://learn.microsoft.com/en-us/azure/cognitive-services/speech-service/language-support?tabs=tts
+speech_config = speechsdk.SpeechConfig(
+    subscription=speech_key, region=service_region)
+speech_config.speech_synthesis_voice_name = "en-US-AshleyNeural"
+# Set the initial silence timeout to 10 seconds
+speech_config.set_property(
+    speechsdk.PropertyId.SpeechServiceConnection_InitialSilenceTimeoutMs, "10000")
+speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config)
+speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config)
 
 # Should be the locale for the speaker's language.
 speech_config.speech_recognition_language = "en-US"
