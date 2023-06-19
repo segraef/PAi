@@ -13,6 +13,12 @@ EXIT_WORD = "Exit"
 # Initialize command execution flag
 execute_commands = False
 
+# Set up Azure OpenAI
+openai.api_key = os.environ.get('openai_api_key')
+openai.api_base = os.environ.get('openai_api_base')
+openai.api_type = 'azure'
+openai.api_version = '2023-05-15'
+
 # Set up Azure Cognitive Services Speech
 speech_key = os.environ.get('cognitive_services_speech_key')
 service_region, endpoint = "australiaeast", "https://australiaeast.api.cognitive.microsoft.com/sts/v1.0/issuetoken"
@@ -27,22 +33,6 @@ try:
 except ValueError as ex:
     print(f"Error: {ex}")
     exit(1)
-
-# Set up Azure Cognitive Services Speech
-speech_key = os.environ.get('cognitive_services_speech_key')
-service_region, endpoint = "australiaeast", "https://australiaeast.api.cognitive.microsoft.com/sts/v1.0/issuetoken"
-speech_config = speechsdk.SpeechConfig(
-    subscription=speech_key, region=service_region)
-# https://learn.microsoft.com/en-us/azure/cognitive-services/speech-service/language-support?tabs=tts
-speech_config.speech_synthesis_voice_name = "en-US-AshleyNeural"
-speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config)
-speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config)
-
-# Set up Azure OpenAI
-openai.api_key = os.environ.get('openai_api_key')
-openai.api_base = os.environ.get('openai_api_base')
-openai.api_type = 'azure'
-openai.api_version = '2023-05-15'
 
 # Function to generate a response using Azure OpenAI
 
