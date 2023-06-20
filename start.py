@@ -109,7 +109,7 @@ def keyword_listener(event):
         # Check if the stop word is detected
         elif STOP_WORD in recognized_text:
             execute_commands = False
-            print("Stopped speaking.")
+            print("Stopped.")
 
             # Interrupt the speech synthesis if it is still in progress
             speech_synthesizer.stop_speaking()
