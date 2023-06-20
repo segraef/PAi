@@ -27,8 +27,6 @@ speech_config.set_property(
     speechsdk.PropertyId.SpeechServiceConnection_InitialSilenceTimeoutMs, "10000")
 speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config)
 speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config)
-
-# Should be the locale for the speaker's language.
 speech_config.speech_recognition_language = "en-US"
 speech_recognizer = speechsdk.SpeechRecognizer(
     speech_config=speech_config)
