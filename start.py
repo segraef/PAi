@@ -6,7 +6,7 @@ import openai.error
 import requests.exceptions
 
 # Set up the wake word and stop word
-WAKE_WORD = "Hey Azure."
+WAKE_WORD = "Hey Azure"
 STOP_WORD = "Stop."
 EXIT_WORD = "Exit"
 
